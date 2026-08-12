@@ -215,7 +215,10 @@
 
       <div class="contact-form-card">
         <h3>Send Us a Message</h3>
-        <form method="POST" action="mailto:info@mehta-mehta.com" enctype="text/plain">
+        <form id="contactForm" method="POST" action="https://api.web3forms.com/submit">
+          <input type="hidden" name="access_key" value="5c2c9e5d-c40d-4f69-a1da-dae6883f4093">
+          <input type="hidden" name="subject" value="New enquiry from mehtainsol.com contact form">
+          <input type="checkbox" name="botcheck" style="display:none;" tabindex="-1" autocomplete="off">
           <div class="form-row">
             <div class="form-group">
               <label for="name">Full Name *</label>
@@ -258,6 +261,7 @@
             <textarea id="message" name="message" placeholder="Please describe your matter briefly…" required></textarea>
           </div>
           <button type="submit" class="btn btn-gold" style="width:100%; padding:0.85rem;">Send Message</button>
+          <div id="formStatus" style="display:none; margin-top:1rem; padding:0.75rem 1rem; border-radius:var(--radius); font-size:0.88rem;"></div>
         </form>
       </div>
 
@@ -265,7 +269,52 @@
   </div>
 </section>
 
+<script>
+  (function () {
+    var form = document.getElementById('contactForm');
+    var status = document.getElementById('formStatus');
+    var btn = form.querySelector('button[type="submit"]');
+    var btnText = btn.textContent;
 
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      btn.disabled = true;
+      btn.textContent = 'Sending…';
+      status.style.display = 'none';
+
+      var data = Object.fromEntries(new FormData(form));
+
+      fetch(form.action, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        body: JSON.stringify(data)
+      })
+        .then(function (res) { return res.json(); })
+        .then(function (result) {
+          if (result.success) {
+            status.style.background = '#e9f7ef';
+            status.style.color = '#1e7e34';
+            status.style.border = '1px solid #b9e6c9';
+            status.textContent = 'Thank you for reaching out. We will contact you shortly.';
+            form.reset();
+          } else {
+            throw new Error(result.message || 'Submission failed.');
+          }
+        })
+        .catch(function () {
+          status.style.background = '#fdecea';
+          status.style.color = '#b52a2a';
+          status.style.border = '1px solid #f3c2c2';
+          status.textContent = 'Something went wrong. Please email us directly at info@mehta-mehta.com.';
+        })
+        .finally(function () {
+          status.style.display = 'block';
+          btn.disabled = false;
+          btn.textContent = btnText;
+        });
+    });
+  })();
+</script>
 
 <!-- FOOTER -->
 <footer class="footer">
